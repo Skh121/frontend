@@ -1,24 +1,42 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 export const adminAPI = {
   // Dashboard
   getDashboardStats: async () => {
-    const response = await apiClient.get('/admin/dashboard/stats');
+    const response = await apiClient.get("/admin/dashboard/stats");
     return response.data;
   },
 
   // Products
   getAllProducts: async (params = {}) => {
-    const response = await apiClient.get('/admin/products', { params });
+    const response = await apiClient.get("/admin/products", { params });
     return response.data;
   },
 
   createProduct: async (data) => {
-    const response = await apiClient.post('/admin/products', data);
+    // Check if data is FormData (file upload) or regular object
+    if (data instanceof FormData) {
+      const response = await apiClient.post("/admin/products", data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    }
+    const response = await apiClient.post("/admin/products", data);
     return response.data;
   },
 
   updateProduct: async (id, data) => {
+    // Check if data is FormData (file upload) or regular object
+    if (data instanceof FormData) {
+      const response = await apiClient.put(`/admin/products/${id}`, data, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      return response.data;
+    }
     const response = await apiClient.put(`/admin/products/${id}`, data);
     return response.data;
   },
@@ -30,7 +48,7 @@ export const adminAPI = {
 
   // Users
   getAllUsers: async (params = {}) => {
-    const response = await apiClient.get('/admin/users', { params });
+    const response = await apiClient.get("/admin/users", { params });
     return response.data;
   },
 
@@ -63,7 +81,7 @@ export const adminAPI = {
 
   // Orders
   getAllOrders: async (params = {}) => {
-    const response = await apiClient.get('/admin/orders', { params });
+    const response = await apiClient.get("/admin/orders", { params });
     return response.data;
   },
 
