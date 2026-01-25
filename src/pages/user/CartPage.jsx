@@ -1,26 +1,64 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
-import cartAPI from '../../api/cart.api';
-import useCartStore from '../../store/cartStore';
-import Header from '../../components/common/Header';
-import Footer from '../../components/common/Footer';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import cartAPI from "../../api/cart.api";
+import useCartStore from "../../store/cartStore";
+import useAuthStore from "../../store/authStore";
+import Header from "../../components/common/Header";
+import Footer from "../../components/common/Footer";
+import LoadingSpinner from "../../components/common/LoadingSpinner";
+import { SERVER_URL } from "../../utils/constants";
+import confirmDialog from "../../utils/confirmDialog.jsx";
+
+const getImageUrl = (image) => {
+  if (!image) return "/placeholder.png";
+  return image.startsWith("/") ? `${SERVER_URL}${image}` : image;
+};
 
 const CartPage = () => {
   const navigate = useNavigate();
   const { setCart } = useCartStore();
   const queryClient = useQueryClient();
 
+  const { isAuthenticated } = useAuthStore();
+
   const { data, isLoading, error } = useQuery({
-    queryKey: ['cart'],
+    queryKey: ["cart"],
     queryFn: cartAPI.getCart,
+    enabled: isAuthenticated,
   });
 
+  if (!isAuthenticated) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <Header />
+        <main className="grow container mx-auto px-4 py-8 flex items-center justify-center">
+          <div className="text-center max-w-md mx-auto">
+            <div className="text-6xl mb-6">🛒</div>
+            <h1 className="text-3xl font-bold mb-4">Your Cart is Locked</h1>
+            <p className="text-gray-600 mb-8 text-lg">
+              Please log in to view requested items or add new products to your
+              shopping cart.
+            </p>
+            <button
+              onClick={() => navigate("/login")}
+              className="btn-primary w-full py-3 text-lg"
+            >
+              Login to View Cart
+            </button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   const updateMutation = useMutation({
-    mutationFn: ({ productId, quantity }) => cartAPI.updateCartItem(productId, quantity),
+    mutationFn: ({ productId, quantity }) =>
+      cartAPI.updateCartItem(productId, quantity),
     onSuccess: (response) => {
       setCart(response.data.cart);
-      queryClient.invalidateQueries(['cart']);
+      queryClient.invalidateQueries(["cart"]);
     },
   });
 
@@ -28,7 +66,11 @@ const CartPage = () => {
     mutationFn: (productId) => cartAPI.removeFromCart(productId),
     onSuccess: (response) => {
       setCart(response.data.cart);
-      queryClient.invalidateQueries(['cart']);
+      queryClient.invalidateQueries(["cart"]);
+      toast.success("Item removed from cart");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to remove item");
     },
   });
 
@@ -39,8 +81,12 @@ const CartPage = () => {
     updateMutation.mutate({ productId, quantity: newQuantity });
   };
 
-  const handleRemove = (productId) => {
-    if (confirm('Remove this item from cart?')) {
+  const handleRemove = async (productId) => {
+    const confirmed = await confirmDialog("Remove this item from cart?", {
+      confirmText: "Remove",
+      type: "danger",
+    });
+    if (confirmed) {
       removeMutation.mutate(productId);
     }
   };
@@ -59,7 +105,7 @@ const CartPage = () => {
     return (
       <div className="flex flex-col min-h-screen">
         <Header />
-        <div className="flex-grow container mx-auto px-4 py-8">
+        <div className="grow container mx-auto px-4 py-8">
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             Failed to load cart
           </div>
@@ -73,16 +119,18 @@ const CartPage = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <main className="flex-grow container mx-auto px-4 py-8">
+      <main className="grow container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
 
         {!cart || cart.items.length === 0 ? (
           <div className="text-center py-12">
             <div className="text-6xl mb-4">🛒</div>
             <h2 className="text-2xl font-semibold mb-4">Your cart is empty</h2>
-            <p className="text-gray-600 mb-6">Start shopping to add items to your cart</p>
+            <p className="text-gray-600 mb-6">
+              Start shopping to add items to your cart
+            </p>
             <button
-              onClick={() => navigate('/products')}
+              onClick={() => navigate("/products")}
               className="btn-primary"
             >
               Browse Products
@@ -99,7 +147,7 @@ const CartPage = () => {
                     className="flex items-center gap-4 p-6 border-b last:border-b-0"
                   >
                     <img
-                      src={item.product?.images?.[0] || '/placeholder.png'}
+                      src={getImageUrl(item.product?.images?.[0])}
                       alt={item.product?.name}
                       className="w-24 h-24 object-cover rounded"
                     />
@@ -114,7 +162,12 @@ const CartPage = () => {
 
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity - 1)}
+                          onClick={() =>
+                            handleQuantityChange(
+                              item.product._id,
+                              item.quantity - 1,
+                            )
+                          }
                           className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded"
                           disabled={updateMutation.isPending}
                         >
@@ -124,7 +177,12 @@ const CartPage = () => {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => handleQuantityChange(item.product._id, item.quantity + 1)}
+                          onClick={() =>
+                            handleQuantityChange(
+                              item.product._id,
+                              item.quantity + 1,
+                            )
+                          }
                           className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded"
                           disabled={updateMutation.isPending}
                         >
@@ -158,12 +216,14 @@ const CartPage = () => {
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span className="font-semibold">${cart.totalPrice.toFixed(2)}</span>
+                    <span className="font-semibold">
+                      ${cart.totalPrice.toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Shipping</span>
                     <span className="font-semibold">
-                      {cart.totalPrice > 100 ? 'FREE' : '$10.00'}
+                      {cart.totalPrice > 100 ? "FREE" : "$10.00"}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -176,7 +236,12 @@ const CartPage = () => {
                     <div className="flex justify-between text-lg font-bold">
                       <span>Total</span>
                       <span className="text-blue-600">
-                        ${(cart.totalPrice + (cart.totalPrice > 100 ? 0 : 10) + cart.totalPrice * 0.1).toFixed(2)}
+                        $
+                        {(
+                          cart.totalPrice +
+                          (cart.totalPrice > 100 ? 0 : 10) +
+                          cart.totalPrice * 0.1
+                        ).toFixed(2)}
                       </span>
                     </div>
                   </div>
@@ -189,14 +254,14 @@ const CartPage = () => {
                 )}
 
                 <button
-                  onClick={() => navigate('/checkout')}
+                  onClick={() => navigate("/checkout")}
                   className="btn-primary w-full"
                 >
                   Proceed to Checkout
                 </button>
 
                 <button
-                  onClick={() => navigate('/products')}
+                  onClick={() => navigate("/products")}
                   className="btn-secondary w-full mt-3"
                 >
                   Continue Shopping

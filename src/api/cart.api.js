@@ -1,11 +1,11 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 export const cartAPI = {
   /**
    * Get user's cart
    */
   getCart: async () => {
-    const response = await apiClient.get('/cart');
+    const response = await apiClient.get("/cart");
     return response.data;
   },
 
@@ -13,7 +13,7 @@ export const cartAPI = {
    * Add item to cart
    */
   addToCart: async (productId, quantity) => {
-    const response = await apiClient.post('/cart/items', {
+    const response = await apiClient.post("/cart/items", {
       productId,
       quantity,
     });
@@ -24,7 +24,7 @@ export const cartAPI = {
    * Update cart item quantity
    */
   updateCartItem: async (productId, quantity) => {
-    const response = await apiClient.put('/cart/items', {
+    const response = await apiClient.put("/cart/items", {
       productId,
       quantity,
     });
@@ -35,7 +35,7 @@ export const cartAPI = {
    * Remove item from cart
    */
   removeFromCart: async (productId) => {
-    const response = await apiClient.delete('/cart/items', {
+    const response = await apiClient.delete("/cart/items", {
       data: { productId },
     });
     return response.data;
@@ -45,7 +45,7 @@ export const cartAPI = {
    * Clear cart
    */
   clearCart: async () => {
-    const response = await apiClient.delete('/cart');
+    const response = await apiClient.delete("/cart");
     return response.data;
   },
 };

@@ -1,68 +1,84 @@
-import { Link } from 'react-router-dom';
-import useAuthStore from '../../store/authStore';
-import useCartStore from '../../store/cartStore';
+import { Link, useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
+import useAuthStore from "../../store/authStore";
+import useCartStore from "../../store/cartStore";
+import useFavoritesStore from "../../store/favoritesStore";
+import authAPI from "../../api/auth.api";
+import { SERVER_URL } from "../../utils/constants";
 
 const Header = () => {
-  const { isAuthenticated, user } = useAuthStore();
-  const { itemCount } = useCartStore();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { isAuthenticated, user, clearUser } = useAuthStore();
+  const { itemCount, clearCart } = useCartStore();
+  const { favoriteIds, clearFavorites } = useFavoritesStore();
+
+  const wishlistCount = favoriteIds.size;
+
+  const handleLogout = async () => {
+    try {
+      await authAPI.logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      // CRITICAL: Clear all user data to prevent data leakage between sessions
+      clearUser(); // Clear auth store
+      clearCart(); // Clear cart store
+      clearFavorites(); // Clear favorites store
+      queryClient.clear(); // Clear ALL React Query cache
+      navigate("/");
+    }
+  };
 
   return (
     <header className="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-50 border-b border-gray-100">
       <div className="container-custom py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent hover:scale-105 transition-transform duration-300">
-            🛍️ ShopSecure
+          <Link
+            to="/"
+            className="text-3xl font-bold text-blue-600 hover:text-blue-700 transition-colors duration-300 flex items-center gap-2"
+          >
+            <span>🛍️</span> ShopSecure
           </Link>
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
             <Link
               to="/"
-              className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold relative group"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
             >
               Home
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300"></span>
             </Link>
             <Link
               to="/products"
-              className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold relative group"
+              className="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
             >
               Products
-              <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300"></span>
             </Link>
-            {isAuthenticated && (
-              <>
-                <Link
-                  to="/orders"
-                  className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold relative group"
-                >
-                  Orders
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-                <Link
-                  to="/cart"
-                  className="relative text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold group"
-                >
-                  Cart
-                  {itemCount > 0 && (
-                    <span className="absolute -top-2 -right-3 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center animate-pulse shadow-lg">
-                      {itemCount}
-                    </span>
-                  )}
-                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300"></span>
-                </Link>
-              </>
-            )}
-            {user?.role === 'admin' && (
-              <Link
-                to="/admin"
-                className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold relative group"
-              >
-                Admin
-                <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-600 to-pink-600 group-hover:w-full transition-all duration-300"></span>
-              </Link>
-            )}
+            <Link
+              to="/wishlist"
+              className="relative text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            >
+              Wishlist
+              {wishlistCount > 0 && (
+                <span className="absolute -top-2 -right-3 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              to="/cart"
+              className="relative text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
+            >
+              Cart
+              {itemCount > 0 && (
+                <span className="absolute -top-2 -right-3 bg-blue-600 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center shadow-sm animate-pulse">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
+            {isAuthenticated && <>{/* Orders link removed as per request */}</>}
           </nav>
 
           {/* Auth Actions */}
@@ -71,28 +87,45 @@ const Header = () => {
               <>
                 <Link
                   to="/profile"
-                  className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold hidden sm:block"
+                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600 transition-colors duration-200 font-medium sm:flex"
                 >
-                  👤 {user?.firstName || 'Profile'}
+                  {user?.profileImage ? (
+                    <img
+                      src={
+                        user.profileImage.startsWith("/")
+                          ? `${SERVER_URL}${user.profileImage}`
+                          : user.profileImage
+                      }
+                      alt="Profile"
+                      className="w-8 h-8 rounded-full object-cover border border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                      👤
+                    </div>
+                  )}
+                  <span className="text-sm">
+                    {user?.firstName || "Profile"}
+                  </span>
                 </Link>
-                <Link
-                  to="/logout"
-                  className="bg-gradient-to-r from-red-600 to-pink-600 hover:from-red-700 hover:to-pink-700 text-white font-semibold px-6 py-2 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                <button
+                  onClick={handleLogout}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium px-4 py-2 border border-red-200 rounded-lg hover:bg-red-50 transition-all"
                 >
                   Logout
-                </Link>
+                </button>
               </>
             ) : (
               <>
                 <Link
                   to="/login"
-                  className="text-gray-700 hover:text-purple-600 transition-colors duration-200 font-semibold"
+                  className="text-gray-600 hover:text-blue-600 transition-colors duration-200 font-medium"
                 >
                   Login
                 </Link>
                 <Link
                   to="/register"
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold px-6 py-2 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                  className="btn-primary py-2 px-6 text-sm shadow-lg shadow-blue-500/20"
                 >
                   Register
                 </Link>
