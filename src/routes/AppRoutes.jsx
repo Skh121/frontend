@@ -1,33 +1,36 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
+import StorefrontRoute from './StorefrontRoute';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 // Auth pages
-import LoginPage from '../pages/LoginPage';
-import RegisterPage from '../pages/RegisterPage';
-import VerifyEmailPage from '../pages/VerifyEmailPage';
+const LoginPage = lazy(() => import('../pages/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/RegisterPage'));
+const VerifyEmailPage = lazy(() => import('../pages/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('../pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('../pages/ResetPasswordPage'));
 
 // User pages
-import HomePage from '../pages/user/HomePage';
-import ProductsPage from '../pages/user/ProductsPage';
-import CartPage from '../pages/user/CartPage';
-import CheckoutPage from '../pages/user/CheckoutPage';
-import OrdersPage from '../pages/user/OrdersPage';
-import ProfilePage from '../pages/user/ProfilePage';
+const HomePage = lazy(() => import('../pages/user/HomePage'));
+const ProductsPage = lazy(() => import('../pages/user/ProductsPage'));
+const ProductDetailPage = lazy(() => import('../pages/user/ProductDetailPage'));
+const WishlistPage = lazy(() => import('../pages/user/WishlistPage'));
+const CartPage = lazy(() => import('../pages/user/CartPage'));
+const CheckoutPage = lazy(() => import('../pages/user/CheckoutPage'));
+const OrdersPage = lazy(() => import('../pages/user/OrdersPage'));
+const ProfilePage = lazy(() => import('../pages/user/ProfilePage'));
+const ChangePasswordPage = lazy(() => import('../pages/user/ChangePasswordPage'));
+const SecuritySettingsPage = lazy(() => import('../pages/user/SecuritySettingsPage'));
+const PrivacySettingsPage = lazy(() => import('../pages/user/PrivacySettingsPage'));
 
 // Admin pages
-import AdminDashboard from '../pages/admin/AdminDashboard';
-import AdminProducts from '../pages/admin/AdminProducts';
-
-// Placeholder for product detail
-const ProductDetailPage = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-3xl font-bold mb-4">Product Detail Page</h1>
-      <p className="text-gray-600">To be implemented</p>
-    </div>
-  </div>
-);
+const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
+const AdminProducts = lazy(() => import('../pages/admin/AdminProducts'));
+const AdminUsers = lazy(() => import('../pages/admin/AdminUsers'));
+const AdminActivityLogs = lazy(() => import('../pages/admin/AdminActivityLogs'));
+const AdminLayout = lazy(() => import('../components/admin/AdminLayout'));
 
 const NotFoundPage = () => (
   <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -44,71 +47,124 @@ const NotFoundPage = () => (
 const AppRoutes = () => {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public routes */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/verify-email" element={<VerifyEmailPage />} />
-        <Route path="/products" element={<ProductsPage />} />
-        <Route path="/products/:id" element={<ProductDetailPage />} />
+      <Suspense
+        fallback={
+          <div className="min-h-screen flex items-center justify-center bg-white">
+            <LoadingSpinner size="lg" />
+          </div>
+        }
+      >
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<StorefrontRoute><HomePage /></StorefrontRoute>} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
+          <Route
+            path="/products"
+            element={<StorefrontRoute><ProductsPage /></StorefrontRoute>}
+          />
+          <Route
+            path="/products/:id"
+            element={<StorefrontRoute><ProductDetailPage /></StorefrontRoute>}
+          />
 
-        {/* Protected user routes */}
-        <Route
-          path="/cart"
-          element={
-            <ProtectedRoute>
-              <CartPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/checkout"
-          element={
-            <ProtectedRoute>
-              <CheckoutPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/orders"
-          element={
-            <ProtectedRoute>
-              <OrdersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/profile"
-          element={
-            <ProtectedRoute>
-              <ProfilePage />
-            </ProtectedRoute>
-          }
-        />
+          {/* Protected user routes */}
+          <Route
+            path="/wishlist"
+            element={
+              <StorefrontRoute><WishlistPage /></StorefrontRoute>
+            }
+          />
+          <Route
+            path="/cart"
+            element={
+              <StorefrontRoute><CartPage /></StorefrontRoute>
+            }
+          />
+          <Route
+            path="/checkout"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/orders"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <OrdersPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/change-password"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <ChangePasswordPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/security"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <SecuritySettingsPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/privacy"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <PrivacySettingsPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
 
-        {/* Admin routes */}
-        <Route
-          path="/admin"
-          element={
-            <AdminRoute>
-              <AdminDashboard />
-            </AdminRoute>
-          }
-        />
-        <Route
-          path="/admin/products"
-          element={
-            <AdminRoute>
-              <AdminProducts />
-            </AdminRoute>
-          }
-        />
+          {/* Admin Dashboard Routes */}
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <AdminLayout />
+              </AdminRoute>
+            }
+          >
+            <Route index element={<AdminDashboard />} />
+            <Route path="products" element={<AdminProducts />} />
+            <Route path="users" element={<AdminUsers />} />
+            <Route path="activity-logs" element={<AdminActivityLogs />} />
+          </Route>
 
-        {/* 404 */}
-        <Route path="/404" element={<NotFoundPage />} />
-        <Route path="*" element={<Navigate to="/404" replace />} />
-      </Routes>
+          {/* 404 */}
+          <Route path="/404" element={<NotFoundPage />} />
+          <Route path="*" element={<Navigate to="/404" replace />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
   );
 };
