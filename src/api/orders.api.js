@@ -1,11 +1,11 @@
-import apiClient from './client';
+import apiClient from "./client";
 
 export const ordersAPI = {
   /**
    * Create order from cart
    */
   createOrder: async (data) => {
-    const response = await apiClient.post('/orders', data);
+    const response = await apiClient.post("/orders", data);
     return response.data;
   },
 
@@ -21,7 +21,7 @@ export const ordersAPI = {
    * Get user's orders
    */
   getUserOrders: async (params = {}) => {
-    const response = await apiClient.get('/users/orders', { params });
+    const response = await apiClient.get("/users/orders", { params });
     return response.data;
   },
 
