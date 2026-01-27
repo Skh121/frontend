@@ -8,7 +8,9 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (user?.role !== 'admin') {
+  // Case-insensitive check for admin role
+  const isAdmin = user?.role && user.role.toLowerCase() === 'admin';
+  if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
 
