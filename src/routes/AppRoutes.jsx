@@ -4,6 +4,7 @@ import ProtectedRoute from './ProtectedRoute';
 import AdminRoute from './AdminRoute';
 import StorefrontRoute from './StorefrontRoute';
 import LoadingSpinner from '../components/common/LoadingSpinner';
+import IdleTimerWrapper from '../components/auth/IdleTimerWrapper';
 
 // Auth pages
 const LoginPage = lazy(() => import('../pages/LoginPage'));
@@ -47,6 +48,7 @@ const NotFoundPage = () => (
 const AppRoutes = () => {
   return (
     <BrowserRouter>
+      <IdleTimerWrapper />
       <Suspense
         fallback={
           <div className="min-h-screen flex items-center justify-center bg-white">
