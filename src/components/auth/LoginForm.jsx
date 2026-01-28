@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 import toast from "react-hot-toast";
-import { FiLock, FiShield, FiCheck } from "react-icons/fi";
+import { FiLock, FiShield, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
 import authAPI from "../../api/auth.api";
 import useAuthStore from "../../store/authStore";
 import useCartStore from "../../store/cartStore";
@@ -27,6 +27,7 @@ const LoginForm = () => {
   const [requiresTOTP, setRequiresTOTP] = useState(false);
   const [totpCode, setTotpCode] = useState("");
   const [useBackupCode, setUseBackupCode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginMutation = useMutation({
     mutationFn: (data) =>
@@ -121,8 +122,9 @@ const LoginForm = () => {
   const handleTOTPSubmit = (e) => {
     e.preventDefault();
     setError("");
-    if (!totpCode || totpCode.length !== 6) {
-      setError("Please enter a valid 6-digit code");
+    const expectedLength = useBackupCode ? 9 : 6;
+    if (!totpCode || totpCode.length !== expectedLength) {
+      setError(`Please enter a valid ${expectedLength}-character code`);
       return;
     }
     totpMutation.mutate();
@@ -161,11 +163,23 @@ const LoginForm = () => {
                 name="totpCode"
                 type="text"
                 required
-                maxLength={useBackupCode ? 10 : 6}
+                maxLength={useBackupCode ? 9 : 6}
                 value={totpCode}
-                onChange={(e) => setTotpCode(e.target.value.replace(/\D/g, ""))}
-                className="input-field text-center text-3xl tracking-[0.5em] font-mono h-14"
-                placeholder={useBackupCode ? "123456789" : "000000"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (useBackupCode) {
+                    // Allow alphanumeric and hyphen, auto-capitalize
+                    setTotpCode(val.replace(/[^a-zA-Z0-9-]/g, "").toUpperCase());
+                  } else {
+                    // Numbers only for TOTP
+                    setTotpCode(val.replace(/\D/g, ""));
+                  }
+                }}
+                className={`input-field text-center font-mono h-14 ${useBackupCode
+                  ? "text-xl tracking-widest"
+                  : "text-3xl tracking-[0.5em]"
+                  }`}
+                placeholder={useBackupCode ? "XXXX-XXXX" : "000000"}
                 autoFocus
               />
             </div>
@@ -308,16 +322,26 @@ const LoginForm = () => {
                   </Link>
                 </div>
               </div>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                value={formData.password}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="••••••••"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="input-field mt-1 pr-10"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                  onClick={() => setShowPassword(!showPassword)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                </button>
+              </div>
             </div>
           </div>
 
