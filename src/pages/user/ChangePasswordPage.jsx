@@ -4,6 +4,7 @@ import { useMutation } from '@tanstack/react-query';
 import userAPI from '../../api/user.api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import PasswordStrengthMeter from '../../components/common/PasswordStrengthMeter';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const ChangePasswordPage = () => {
   const navigate = useNavigate();
@@ -18,6 +19,9 @@ const ChangePasswordPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [passwordExpiryInfo, setPasswordExpiryInfo] = useState(null);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const changePasswordMutation = useMutation({
     mutationFn: (data) => userAPI.changePassword(data),
@@ -159,34 +163,52 @@ const ChangePasswordPage = () => {
               <label htmlFor="currentPassword" className="block text-sm font-medium text-gray-700">
                 Current Password
               </label>
-              <input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                required
-                value={formData.currentPassword}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="Enter your current password"
-                autoComplete="current-password"
-              />
+              <div className="relative">
+                <input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type={showCurrentPassword ? 'text' : 'password'}
+                  required
+                  value={formData.currentPassword}
+                  onChange={handleChange}
+                  className="input-field mt-1 pr-10"
+                  placeholder="Enter your current password"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                >
+                  {showCurrentPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
             </div>
 
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700">
                 New Password
               </label>
-              <input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                required
-                value={formData.newPassword}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="Enter a strong new password"
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <input
+                  id="newPassword"
+                  name="newPassword"
+                  type={showNewPassword ? 'text' : 'password'}
+                  required
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                  className="input-field mt-1 pr-10"
+                  placeholder="Enter a strong new password"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                >
+                  {showNewPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
               <PasswordStrengthMeter password={formData.newPassword} />
             </div>
 
@@ -194,17 +216,26 @@ const ChangePasswordPage = () => {
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm New Password
               </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className="input-field mt-1"
-                placeholder="Confirm your new password"
-                autoComplete="new-password"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className="input-field mt-1 pr-10"
+                  placeholder="Confirm your new password"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                </button>
+              </div>
               {formData.confirmPassword && formData.newPassword !== formData.confirmPassword && (
                 <p className="mt-1 text-sm text-red-600">Passwords do not match</p>
               )}
@@ -227,7 +258,7 @@ const ChangePasswordPage = () => {
             <h3 className="text-sm font-semibold text-blue-900 mb-2">Password Policy</h3>
             <ul className="text-xs text-blue-800 space-y-1">
               <li>• Passwords expire every 90 days</li>
-              <li>• Cannot reuse your last 5 passwords</li>
+              <li>• Cannot reuse your current password</li>
               <li>• Must be at least 12 characters long</li>
               <li>• Must contain uppercase, lowercase, number, and special character</li>
             </ul>
