@@ -46,6 +46,14 @@ export const authAPI = {
   },
 
   /**
+   * Logout from all devices
+   */
+  logoutAllDevices: async () => {
+    const response = await apiClient.post("/auth/logout-all");
+    return response.data;
+  },
+
+  /**
    * Get current user
    */
   getCurrentUser: async () => {
