@@ -4,6 +4,7 @@ import { setupTOTP, verifyAndEnableTOTP, disableTOTP, getTOTPStatus, regenerateB
 import { getMySessions, revokeSession, revokeAllSessions, getSessionStats } from '../../api/session.api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import confirmDialog from '../../utils/confirmDialog.jsx';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const SecuritySettingsPage = () => {
   const [loading, setLoading] = useState(true);
@@ -23,6 +24,7 @@ const SecuritySettingsPage = () => {
   const [password, setPassword] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [passwordAction, setPasswordAction] = useState(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -197,21 +199,19 @@ const SecuritySettingsPage = () => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('2fa')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === '2fa'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === '2fa'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               TOTP-Based MFA
             </button>
             <button
               onClick={() => setActiveTab('sessions')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'sessions'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'sessions'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Active Sessions
             </button>
@@ -308,22 +308,53 @@ const SecuritySettingsPage = () => {
 
             {/* Backup Codes Display */}
             {backupCodes.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-yellow-900 mb-2">Your Backup Codes</h3>
-                <p className="text-sm text-yellow-700 mb-4">
-                  Save these codes in a safe place. Each code can only be used once if you lose access to your authenticator app.
-                </p>
-                <div className="bg-white rounded p-4 mb-4 font-mono text-sm grid grid-cols-2 gap-2">
-                  {backupCodes.map((code, index) => (
-                    <div key={index}>{code}</div>
-                  ))}
+              <div className="bg-white rounded-xl shadow-lg border border-emerald-100 overflow-hidden animate-fade-in mb-8">
+                <div className="bg-emerald-600 px-6 py-4 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-emerald-500/30 rounded-lg backdrop-blur-sm">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold text-white">Save Your Backup Codes</h3>
+                  </div>
+                  <span className="text-emerald-100 text-xs font-medium bg-emerald-500/20 px-2 py-1 rounded border border-emerald-400/30">Emergency Recovery</span>
                 </div>
-                <button
-                  onClick={downloadBackupCodes}
-                  className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700"
-                >
-                  Download Codes
-                </button>
+
+                <div className="p-6">
+                  <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-4 mb-6">
+                    <p className="text-emerald-800 text-sm leading-relaxed">
+                      Backup codes provide access to your account if you lose your device.
+                      <strong> Store them in a secure place.</strong> Each code can be used only once.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-8 text-center">
+                    {backupCodes.map((code, index) => (
+                      <div key={index} className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 font-mono text-sm text-gray-700 shadow-sm transition-all hover:bg-white hover:border-emerald-300 hover:text-emerald-700 select-all">
+                        {code}
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <button
+                      onClick={downloadBackupCodes}
+                      className="btn-primary bg-emerald-600 hover:bg-emerald-700 flex items-center justify-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                      </svg>
+                      <span>Download Codes (.txt)</span>
+                    </button>
+                    <button
+                      onClick={() => setBackupCodes([])}
+                      className="btn-secondary flex items-center justify-center space-x-2"
+                    >
+                      <span>Dismiss</span>
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
@@ -419,94 +450,170 @@ const SecuritySettingsPage = () => {
 
         {/* TOTP Setup Modal */}
         {showTOTPSetup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Setup TOTP-Based MFA</h2>
-              <p className="text-sm text-gray-500 mb-4">
-                Scan the QR code below with your authenticator app
-              </p>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                <p className="text-xs text-blue-800">
-                  Recommended apps: Google Authenticator, Authy, Microsoft Authenticator
-                </p>
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto animate-fade-in border border-gray-100 flex flex-col">
+              {/* Header - Sticky for better experience on small screens */}
+              <div className="bg-blue-600 px-6 sm:px-8 py-5 sm:py-6 text-white relative flex-shrink-0">
+                <h2 className="text-xl sm:text-2xl font-bold">Secure Your Account</h2>
+                <p className="text-blue-100 mt-1 opacity-90 text-sm">Set up Two-Factor Authentication</p>
+                <button
+                  onClick={() => setShowTOTPSetup(false)}
+                  className="absolute top-5 sm:top-6 right-5 sm:right-6 p-1 rounded-full hover:bg-white/10 transition-colors"
+                >
+                  <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               </div>
-              {qrCode && (
-                <div className="flex justify-center mb-4">
-                  <img src={qrCode} alt="QR Code" className="w-64 h-64" />
+
+              <div className="p-6 sm:p-8">
+                <div className="space-y-6 sm:space-y-8">
+                  {/* Step 1 */}
+                  <div>
+                    <div className="flex items-center space-x-3 mb-4">
+                      <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm sm:text-base">1</span>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">Scan QR Code</h3>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mb-6 ml-10 sm:ml-11">
+                      Open your authenticator app and scan the code below.
+                    </p>
+
+                    <div className="flex flex-col items-center">
+                      <div className="relative p-2 sm:p-3 bg-white border-2 border-gray-100 rounded-2xl shadow-inner mb-6 group transition-all duration-300 hover:border-blue-400">
+                        {qrCode ? (
+                          <img src={qrCode} alt="TOTP QR Code" className="w-40 h-40 sm:w-48 sm:h-48 drop-shadow-sm rounded-lg" />
+                        ) : (
+                          <div className="w-40 h-40 sm:w-48 sm:h-48 flex items-center justify-center">
+                            <div className="spinner"></div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="bg-slate-50 rounded-xl p-3 sm:p-4 w-full border border-slate-100">
+                        <p className="text-[10px] text-center text-slate-400 mb-2 uppercase tracking-[0.2em] font-bold">Manual Entry Key</p>
+                        <div className="flex items-center justify-between bg-white px-3 py-2 rounded-lg border border-slate-200 shadow-sm">
+                          <code className="text-xs sm:text-sm font-mono text-blue-600 font-semibold break-all mr-2">{totpSecret}</code>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText(totpSecret);
+                              toast.success('Secret key copied');
+                            }}
+                            className="text-slate-400 hover:text-blue-600 transition-colors p-1 flex-shrink-0"
+                            title="Copy secret"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 2 */}
+                  <div>
+                    <div className="flex items-center space-x-3 mb-4">
+                      <span className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-sm sm:text-base">2</span>
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900">Verify & Activate</h3>
+                    </div>
+                    <p className="text-gray-500 text-xs sm:text-sm mb-6 ml-10 sm:ml-11">
+                      Enter the 6-digit code from your app.
+                    </p>
+
+                    <form onSubmit={handleVerifyTOTP} className="ml-10 sm:ml-11">
+                      <div className="mb-8">
+                        <input
+                          type="text"
+                          value={totpToken}
+                          onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          className="input-field text-center text-2xl sm:text-3xl tracking-[0.3em] font-bold py-3 sm:py-4 bg-slate-50 border-slate-200 focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all"
+                          placeholder="000000"
+                          maxLength="6"
+                          required
+                          autoFocus
+                        />
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        <button
+                          type="submit"
+                          className="btn-primary flex-1 py-3 sm:py-3.5 text-sm sm:text-base shadow-lg shadow-blue-200"
+                        >
+                          Enable Secure MFA
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowTOTPSetup(false)}
+                          className="btn-secondary flex-1 py-3 sm:py-3.5 text-sm sm:text-base"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </form>
+                  </div>
                 </div>
-              )}
-              <p className="text-xs text-gray-500 mb-4">
-                Or enter this code manually: <code className="bg-gray-100 px-2 py-1 rounded">{totpSecret}</code>
-              </p>
-              <form onSubmit={handleVerifyTOTP}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Enter the 6-digit code from your app:
-                </label>
-                <input
-                  type="text"
-                  value={totpToken}
-                  onChange={(e) => setTotpToken(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4"
-                  placeholder="000000"
-                  maxLength="6"
-                  required
-                />
-                <div className="flex space-x-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Verify & Enable
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowTOTPSetup(false)}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
         )}
 
         {/* Password Modal */}
         {showPasswordModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-8 max-w-md w-full">
-              <h2 className="text-2xl font-bold mb-4">Confirm with Password</h2>
-              <p className="text-sm text-gray-600 mb-4">
-                Please enter your password to continue.
-              </p>
-              <form onSubmit={handlePasswordSubmit}>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md mb-4"
-                  placeholder="Enter your password"
-                  required
-                />
-                <div className="flex space-x-3">
-                  <button
-                    type="submit"
-                    className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowPasswordModal(false);
-                      setPassword('');
-                    }}
-                    className="flex-1 px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
-                  >
-                    Cancel
-                  </button>
+          <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-all duration-300">
+            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto animate-fade-in border border-gray-100">
+              <div className="px-6 sm:px-8 py-8">
+                <div className="flex flex-col items-center text-center mb-8">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 mb-4">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Verification Required</h2>
+                  <p className="text-gray-500 text-xs sm:text-sm mt-2 px-2">
+                    Please enter your password to confirm this action.
+                  </p>
                 </div>
-              </form>
+
+                <form onSubmit={handlePasswordSubmit}>
+                  <div className="relative mb-8">
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="input-field pr-12"
+                      placeholder="Account password"
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <FiEyeOff size={20} /> : <FiEye size={20} />}
+                    </button>
+                  </div>
+
+                  <div className="flex flex-col gap-3">
+                    <button
+                      type="submit"
+                      className="btn-primary w-full py-3 sm:py-3.5 shadow-lg shadow-blue-100 text-sm sm:text-base"
+                    >
+                      Confirm Action
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPasswordModal(false);
+                        setPassword('');
+                        setShowPassword(false);
+                      }}
+                      className="btn-secondary w-full py-3 sm:py-3.5 text-sm sm:text-base"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         )}
