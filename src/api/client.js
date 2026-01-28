@@ -57,51 +57,68 @@ apiClient.interceptors.response.use(
     }
 
     // Handle 401 Unauthorized
-    // We do NOT retry if the failed request WAS a refresh request itself (to avoid infinite loop)
-    if (
-      error.response?.status === 401 &&
-      !originalRequest.url?.includes("/auth/refresh")
-    ) {
-      originalRequest._retry = true; // Mark as retried IMMEDIATELY
-
-      if (isRefreshing) {
-        try {
-          // Wait for the single refresh promise to resolve
-          await refreshPromise;
-          return apiClient(originalRequest);
-        } catch (err) {
-          return Promise.reject(err);
+    if (error.response?.status === 401) {
+      // Check for specific idle timeout code
+      if (error.response?.data?.code === "SESSION_IDLE_TIMEOUT") {
+        console.warn("Session idle timeout detected.");
+        useAuthStore.getState().logout();
+        if (window.location.pathname !== "/login") {
+          const message = error.response.data.message || "Session expired due to inactivity.";
+          window.location.href = `/login?message=${encodeURIComponent(message)}`;
         }
+        return Promise.reject(error);
       }
 
-      // We are the "leader" request starting the refresh
-      isRefreshing = true;
+      // Standard 401 handling with refresh attempt
+      // We do NOT retry if the failed request WAS a refresh request itself (to avoid infinite loop)
+      if (
+        !originalRequest.url?.includes("/auth/refresh") &&
+        !originalRequest.url?.includes("/auth/login")
+      ) {
+        originalRequest._retry = true; // Mark as retried IMMEDIATELY
 
-      // Create a singleton promise for the refresh
-      refreshPromise = (async () => {
-        try {
-          await apiClient.post("/auth/refresh");
-          return true;
-        } catch (refreshError) {
-          // Force logout on refresh failure
-          console.warn("Refresh token failed. Clearing session.");
-          useAuthStore.getState().clearUser();
-
-          if (
-            window.location.pathname !== "/login" &&
-            window.location.pathname !== "/register"
-          ) {
-            window.location.href = "/login";
+        if (isRefreshing) {
+          try {
+            // Wait for the single refresh promise to resolve
+            await refreshPromise;
+            return apiClient(originalRequest);
+          } catch (err) {
+            return Promise.reject(err);
           }
-          throw refreshError;
-        } finally {
-          isRefreshing = false;
-          refreshPromise = null;
         }
-      })();
 
-      await refreshPromise;
-      return apiClient(originalRequest);
+        // We are the "leader" request starting the refresh
+        isRefreshing = true;
+
+        // Create a singleton promise for the refresh
+        refreshPromise = (async () => {
+          try {
+            await apiClient.post("/auth/refresh");
+            return true;
+          } catch (refreshError) {
+            // Force logout on refresh failure
+            console.warn("Refresh token failed. Clearing session.");
+            useAuthStore.getState().clearUser();
+
+            if (
+              window.location.pathname !== "/login" &&
+              window.location.pathname !== "/register"
+            ) {
+              window.location.href = "/login";
+            }
+            throw refreshError;
+          } finally {
+            isRefreshing = false;
+            refreshPromise = null;
+          }
+        })();
+
+        await refreshPromise;
+        return apiClient(originalRequest);
+      }
+
+      // If we are here, it's a 401 from login or refresh which should be rejected
+      return Promise.reject(error);
     }
 
     // Handle PASSWORD_EXPIRED
@@ -120,7 +137,6 @@ apiClient.interceptors.response.use(
     }
 
     // Handle CSRF token errors
-    // Use low-case check to be robust.
     const isCsrfError =
       error.response?.status === 403 &&
       error.response?.data?.message?.toLowerCase().includes("csrf");
