@@ -8,10 +8,12 @@ import useAuthStore from "../../store/authStore";
 import useCartStore from "../../store/cartStore";
 import useFavoritesStore from "../../store/favoritesStore";
 import { SERVER_URL } from "../../utils/constants";
+import { sanitizeURL } from "../../utils/sanitize";
 
 const getImageUrl = (image) => {
   if (!image) return null;
-  return image.startsWith("/") ? `${SERVER_URL}${image}` : image;
+  const url = image.startsWith("/") ? `${SERVER_URL}${image}` : image;
+  return sanitizeURL(url);
 };
 
 const ProductCard = ({ product }) => {
@@ -102,11 +104,10 @@ const ProductCard = ({ product }) => {
             title={isFavorited ? "Remove from wishlist" : "Add to wishlist"}
           >
             <FiHeart
-              className={`w-5 h-5 transition-colors ${
-                isFavorited
-                  ? "fill-red-500 text-red-500"
-                  : "text-gray-600 hover:text-red-500"
-              }`}
+              className={`w-5 h-5 transition-colors ${isFavorited
+                ? "fill-red-500 text-red-500"
+                : "text-gray-600 hover:text-red-500"
+                }`}
             />
           </button>
         </div>
