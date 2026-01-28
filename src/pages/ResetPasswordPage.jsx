@@ -6,6 +6,7 @@ import Header from '../components/common/Header';
 import Footer from '../components/common/Footer';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import PasswordStrengthMeter from '../components/common/PasswordStrengthMeter';
+import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate();
@@ -18,6 +19,8 @@ const ResetPasswordPage = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const resetPasswordMutation = useMutation({
     mutationFn: (data) => authAPI.resetPassword(data.token, data.password),
@@ -155,16 +158,25 @@ const ResetPasswordPage = () => {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                   New Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field"
-                  placeholder="Enter new password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="input-field pr-10"
+                    placeholder="Enter new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors focus:outline-hidden"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
                 <PasswordStrengthMeter password={formData.password} />
               </div>
 
@@ -172,16 +184,25 @@ const ResetPasswordPage = () => {
                 <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm New Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input-field"
-                  placeholder="Confirm new password"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="input-field pr-10"
+                    placeholder="Confirm new password"
+                    required
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-purple-600 transition-colors focus:outline-hidden"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
                 {formData.confirmPassword && formData.password !== formData.confirmPassword && (
                   <p className="text-red-500 text-sm mt-1">Passwords do not match</p>
                 )}
