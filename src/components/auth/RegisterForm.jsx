@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useMutation } from "@tanstack/react-query";
 import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
-import { FiLock, FiCheck } from "react-icons/fi";
+import { FiLock, FiCheck, FiEye, FiEyeOff } from "react-icons/fi";
 import authAPI from "../../api/auth.api";
 import LoadingSpinner from "../common/LoadingSpinner";
 import PasswordStrengthMeter from "../common/PasswordStrengthMeter";
@@ -22,6 +22,8 @@ const RegisterForm = () => {
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const registerMutation = useMutation({
     mutationFn: (data) => authAPI.register(data),
@@ -47,7 +49,7 @@ const RegisterForm = () => {
     onError: (error) => {
       setError(
         error.response?.data?.message ||
-          "Registration failed. Please try again.",
+        "Registration failed. Please try again.",
       );
     },
   });
@@ -294,16 +296,26 @@ const RegisterForm = () => {
                 >
                   Password
                 </label>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="input-field mt-1"
-                  placeholder="Enter a strong password"
-                />
+                <div className="relative">
+                  <input
+                    id="password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    className="input-field mt-1 pr-10"
+                    placeholder="Enter a strong password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                    onClick={() => setShowPassword(!showPassword)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+                  </button>
+                </div>
                 <PasswordStrengthMeter password={formData.password} />
               </div>
 
@@ -314,16 +326,32 @@ const RegisterForm = () => {
                 >
                   Confirm Password
                 </label>
-                <input
-                  id="confirmPassword"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="input-field mt-1"
-                  placeholder="Repeat password"
-                />
+                <div className="relative">
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    required
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    className="input-field mt-1 pr-10"
+                    placeholder="Repeat password"
+                  />
+                  <button
+                    type="button"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-blue-600 transition-colors focus:outline-hidden"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    aria-label={
+                      showConfirmPassword ? "Hide password" : "Show password"
+                    }
+                  >
+                    {showConfirmPassword ? (
+                      <FiEyeOff size={18} />
+                    ) : (
+                      <FiEye size={18} />
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
 
