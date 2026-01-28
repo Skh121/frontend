@@ -40,6 +40,21 @@ const ProfilePage = () => {
     },
   });
 
+  const logoutAllMutation = useMutation({
+    mutationFn: authAPI.logoutAllDevices,
+    onSuccess: () => {
+      toast.success("Successfully logged out from all devices");
+      clearUser();
+      navigate("/login");
+    },
+    onError: (error) => {
+      toast.error(error.response?.data?.message || "Failed to logout from all devices");
+      // Even on error, clear local state for security
+      clearUser();
+      navigate("/login");
+    },
+  });
+
   const updateProfileMutation = useMutation({
     mutationFn: userAPI.updateProfile,
     onSuccess: (response) => {
@@ -139,6 +154,19 @@ const ProfilePage = () => {
     }
   };
 
+  const handleLogoutAll = async () => {
+    const confirmed = await confirmDialog(
+      "This will log you out from all devices, including this one. Continue?",
+      {
+        confirmText: "Logout All",
+        type: "danger",
+      },
+    );
+    if (confirmed) {
+      logoutAllMutation.mutate();
+    }
+  };
+
   const handleEditClick = () => {
     setFormData({
       firstName: user?.firstName || "",
@@ -197,31 +225,28 @@ const ProfilePage = () => {
               <nav className="space-y-2">
                 <button
                   onClick={() => setActiveTab("profile")}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                    activeTab === "profile"
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === "profile"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-gray-100"
+                    }`}
                 >
                   Profile Information
                 </button>
                 <button
                   onClick={() => setActiveTab("security")}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                    activeTab === "security"
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === "security"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-gray-100"
+                    }`}
                 >
                   Security
                 </button>
                 <button
                   onClick={() => setActiveTab("orders")}
-                  className={`w-full text-left px-4 py-2 rounded-lg transition ${
-                    activeTab === "orders"
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-100"
-                  }`}
+                  className={`w-full text-left px-4 py-2 rounded-lg transition ${activeTab === "orders"
+                    ? "bg-blue-600 text-white"
+                    : "hover:bg-gray-100"
+                    }`}
                 >
                   My Orders
                 </button>
@@ -257,10 +282,10 @@ const ProfilePage = () => {
                     )}
                     {(uploadImageMutation.isPending ||
                       deleteImageMutation.isPending) && (
-                      <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                        <LoadingSpinner size="sm" />
-                      </div>
-                    )}
+                        <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                          <LoadingSpinner size="sm" />
+                        </div>
+                      )}
                   </div>
                   <div className="mt-4 flex gap-2">
                     <input
@@ -509,27 +534,33 @@ const ProfilePage = () => {
                     </div>
                   </div>
 
-                  {/* Account Activity */}
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">
-                      Account Activity
+                  {/* Device Management */}
+                  <div className="pt-6 border-t border-gray-100">
+                    <h3 className="text-lg font-semibold text-red-600 mb-4">
+                      Device Management
                     </h3>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between py-2 border-b">
-                        <span className="text-gray-600">Last Login</span>
-                        <span className="font-semibold">
-                          {new Date().toLocaleString()}
-                        </span>
-                      </div>
-                      <div className="flex justify-between py-2 border-b">
-                        <span className="text-gray-600">Account Created</span>
-                        <span className="font-semibold">
-                          {user?.createdAt
-                            ? new Date(user.createdAt).toLocaleDateString()
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Lost a device or suspect unauthorized access? You can log
+                      out from all devices and browser sessions associated with
+                      your account.
+                    </p>
+                    <button
+                      onClick={handleLogoutAll}
+                      disabled={logoutAllMutation.isPending}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors"
+                    >
+                      {logoutAllMutation.isPending ? (
+                        <>
+                          <LoadingSpinner size="sm" />
+                          <span className="ml-2">Logging out everywhere...</span>
+                        </>
+                      ) : (
+                        "Logout from All Devices"
+                      )}
+                    </button>
+                    <p className="mt-2 text-xs text-gray-500">
+                      Note: This will also end your current session.
+                    </p>
                   </div>
                 </div>
               </div>
