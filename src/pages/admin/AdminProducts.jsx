@@ -10,6 +10,7 @@ import {
   SERVER_URL,
 } from "../../utils/constants";
 import confirmDialog from "../../utils/confirmDialog.jsx";
+import { sanitizeInput } from "../../utils/sanitize";
 
 const AdminProducts = () => {
   const queryClient = useQueryClient();
@@ -156,8 +157,8 @@ const AdminProducts = () => {
 
     // Create FormData for file upload
     const submitData = new FormData();
-    submitData.append("name", formData.name.trim());
-    submitData.append("description", formData.description.trim());
+    submitData.append("name", sanitizeInput(formData.name.trim()));
+    submitData.append("description", sanitizeInput(formData.description.trim()));
     submitData.append("price", formData.price);
     submitData.append("category", formData.category);
     submitData.append("stock", formData.stock);
@@ -271,11 +272,10 @@ const AdminProducts = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span
-                        className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
-                          product.isActive
-                            ? "bg-green-100 text-green-800"
-                            : "bg-red-100 text-red-800"
-                        }`}
+                        className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${product.isActive
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                          }`}
                       >
                         {product.isActive ? "Active" : "Inactive"}
                       </span>
