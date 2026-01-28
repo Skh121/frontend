@@ -12,10 +12,12 @@ import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Header from '../../components/common/Header';
 import Footer from '../../components/common/Footer';
 import { SERVER_URL } from '../../utils/constants';
+import { sanitizeHTML, sanitizeURL } from '../../utils/sanitize';
 
 const getImageUrl = (image) => {
   if (!image) return null;
-  return image.startsWith('/') ? `${SERVER_URL}${image}` : image;
+  const url = image.startsWith('/') ? `${SERVER_URL}${image}` : image;
+  return sanitizeURL(url);
 };
 
 const ProductDetailPage = () => {
@@ -167,11 +169,10 @@ const ProductDetailPage = () => {
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
-                        className={`aspect-square rounded-lg overflow-hidden border-2 ${
-                          selectedImage === index
-                            ? 'border-blue-600'
-                            : 'border-gray-200 hover:border-gray-300'
-                        }`}
+                        className={`aspect-square rounded-lg overflow-hidden border-2 ${selectedImage === index
+                          ? 'border-blue-600'
+                          : 'border-gray-200 hover:border-gray-300'
+                          }`}
                       >
                         <img
                           src={getImageUrl(image)}
@@ -206,11 +207,10 @@ const ProductDetailPage = () => {
                     title={isFavorited ? 'Remove from wishlist' : 'Add to wishlist'}
                   >
                     <svg
-                      className={`w-8 h-8 ${
-                        isFavorited
-                          ? 'fill-red-500 text-red-500'
-                          : 'fill-none text-gray-400 hover:text-red-500'
-                      }`}
+                      className={`w-8 h-8 ${isFavorited
+                        ? 'fill-red-500 text-red-500'
+                        : 'fill-none text-gray-400 hover:text-red-500'
+                        }`}
                       stroke="currentColor"
                       strokeWidth="2"
                       viewBox="0 0 24 24"
@@ -234,9 +234,8 @@ const ProductDetailPage = () => {
                   </div>
                   <div className="flex items-center space-x-4">
                     <span
-                      className={`text-sm font-medium ${
-                        product.stock > 0 ? 'text-green-600' : 'text-red-600'
-                      }`}
+                      className={`text-sm font-medium ${product.stock > 0 ? 'text-green-600' : 'text-red-600'
+                        }`}
                     >
                       {product.stock > 0
                         ? `${product.stock} in stock`
@@ -252,7 +251,10 @@ const ProductDetailPage = () => {
 
                 <div className="mb-6 pb-6 border-b">
                   <h2 className="text-lg font-semibold text-gray-900 mb-2">Description</h2>
-                  <p className="text-gray-700 leading-relaxed">{product.description}</p>
+                  <div
+                    className="text-gray-700 leading-relaxed"
+                    dangerouslySetInnerHTML={{ __html: sanitizeHTML(product.description) }}
+                  />
                 </div>
 
                 {/* Quantity Selector */}
@@ -293,8 +295,8 @@ const ProductDetailPage = () => {
                     {addToCartMutation.isPending
                       ? 'Adding...'
                       : product.stock > 0
-                      ? 'Add to Cart'
-                      : 'Out of Stock'}
+                        ? 'Add to Cart'
+                        : 'Out of Stock'}
                   </button>
 
                   <button
