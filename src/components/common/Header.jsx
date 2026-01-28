@@ -5,6 +5,7 @@ import useCartStore from "../../store/cartStore";
 import useFavoritesStore from "../../store/favoritesStore";
 import authAPI from "../../api/auth.api";
 import { SERVER_URL } from "../../utils/constants";
+import { sanitizeURL } from "../../utils/sanitize";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -91,11 +92,11 @@ const Header = () => {
                 >
                   {user?.profileImage ? (
                     <img
-                      src={
+                      src={sanitizeURL(
                         user.profileImage.startsWith("/")
                           ? `${SERVER_URL}${user.profileImage}`
                           : user.profileImage
-                      }
+                      )}
                       alt="Profile"
                       className="w-8 h-8 rounded-full object-cover border border-gray-200"
                     />
