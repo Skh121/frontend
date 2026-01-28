@@ -24,10 +24,10 @@ const useAuthStore = create((set) => ({
     return state.user?.role === 'admin';
   },
 
-  logout: function () {
-    this.clearUser();
-    // Dynamically call other store clears if needed or handle in component
-    // Here we just ensure the auth state is solid
+  logout: async () => {
+    const { clearUser } = useAuthStore.getState();
+    clearUser();
+    // Additional cleanup logic can be added here
   },
 }));
 
@@ -44,6 +44,15 @@ useAuthStore.subscribe(
     }
   }
 );
+
+// Sync across tabs
+if (typeof window !== 'undefined') {
+  window.addEventListener('storage', (event) => {
+    if (event.key === STORAGE_KEYS.USER && !event.newValue) {
+      useAuthStore.getState().clearUser();
+    }
+  });
+}
 
 export { useAuthStore };
 export default useAuthStore;
