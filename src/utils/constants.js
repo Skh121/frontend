@@ -54,3 +54,5 @@ export const STORAGE_KEYS = {
   USER: 'shopping_user',
   CART_COUNT: 'shopping_cart_count',
 };
+
+export const SESSION_IDLE_TIMEOUT = 15 * 60 * 1000; // 15 minutes idle timeout
