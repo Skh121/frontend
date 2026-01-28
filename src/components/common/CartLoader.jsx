@@ -1,48 +1,36 @@
-import { Component } from "react";
+import { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import cartAPI from '../../api/cart.api';
+import useAuthStore from '../../store/authStore';
+import useCartStore from '../../store/cartStore';
 
-class ErrorBoundary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { hasError: false, error: null };
-  }
+const CartLoader = () => {
+  const { isAuthenticated } = useAuthStore();
+  const { setCart, clearCart } = useCartStore();
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
+  // Fetch cart when user is authenticated
+  const { data } = useQuery({
+    queryKey: ['cart'],
+    queryFn: () => cartAPI.getCart(),
+    enabled: isAuthenticated,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
 
-  componentDidCatch(error, errorInfo) {
-    // Log error to console in development
-    if (import.meta.env.DEV) {
-      console.error("Error caught by boundary:", error, errorInfo);
+  // Sync with store when data changes
+  useEffect(() => {
+    if (data?.data?.cart) {
+      setCart(data.data.cart);
     }
-    // In production, you would send this to an error reporting service
-  }
+  }, [data, setCart]);
 
-  render() {
-    if (this.state.hasError) {
-      return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div className="max-w-md w-full bg-white shadow-lg rounded-lg p-8 text-center">
-            <div className="text-red-600 text-6xl mb-4">⚠️</div>
-            <h1 className="text-2xl font-bold text-gray-800 mb-4">
-              Oops! Something went wrong
-            </h1>
-            <p className="text-gray-600 mb-6">
-              We're sorry for the inconvenience. Please try refreshing the page.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="btn-primary"
-            >
-              Refresh Page
-            </button>
-          </div>
-        </div>
-      );
+  // Clear cart on logout
+  useEffect(() => {
+    if (!isAuthenticated) {
+      clearCart();
     }
+  }, [isAuthenticated, clearCart]);
 
-    return this.props.children;
-  }
-}
+  return null;
+};
 
-export default ErrorBoundary;
+export default CartLoader;

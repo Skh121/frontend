@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
@@ -17,8 +18,8 @@ const getImageUrl = (image) => {
 
 const CartPage = () => {
   const navigate = useNavigate();
-  const { setCart } = useCartStore();
-  const queryClient = useQueryClient();
+  const { cart: storeCart, setCart } = useCartStore(); // Modified this line
+  const queryClient = useQueryClient(); // Moved this line
 
   const { isAuthenticated } = useAuthStore();
 
@@ -27,6 +28,13 @@ const CartPage = () => {
     queryFn: cartAPI.getCart,
     enabled: isAuthenticated,
   });
+
+  // Keep store in sync with background refetches
+  useEffect(() => {
+    if (data?.data?.cart) {
+      setCart(data.data.cart);
+    }
+  }, [data, setCart]);
 
   if (!isAuthenticated) {
     return (
