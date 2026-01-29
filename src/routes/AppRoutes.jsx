@@ -25,6 +25,7 @@ const ProfilePage = lazy(() => import('../pages/user/ProfilePage'));
 const ChangePasswordPage = lazy(() => import('../pages/user/ChangePasswordPage'));
 const SecuritySettingsPage = lazy(() => import('../pages/user/SecuritySettingsPage'));
 const PrivacySettingsPage = lazy(() => import('../pages/user/PrivacySettingsPage'));
+const OrderDetailsPage = lazy(() => import('../pages/user/OrderDetailsPage'));
 
 // Admin pages
 const AdminDashboard = lazy(() => import('../pages/admin/AdminDashboard'));
@@ -102,6 +103,16 @@ const AppRoutes = () => {
               <StorefrontRoute>
                 <ProtectedRoute>
                   <OrdersPage />
+                </ProtectedRoute>
+              </StorefrontRoute>
+            }
+          />
+          <Route
+            path="/orders/:id"
+            element={
+              <StorefrontRoute>
+                <ProtectedRoute>
+                  <OrderDetailsPage />
                 </ProtectedRoute>
               </StorefrontRoute>
             }

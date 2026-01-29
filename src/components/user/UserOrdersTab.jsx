@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import ordersAPI from '../../api/orders.api';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Pagination from '../../components/common/Pagination';
@@ -79,7 +80,10 @@ const UserOrdersTab = () => {
                     {/* Order Header */}
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <h3 className="text-lg font-bold">Order #{order.orderNumber}</h3>
+                            <h3 className="text-lg font-bold">
+                                Order #{order.orderNumber}
+                            </h3>
+
                             <p className="text-sm text-gray-600">
                                 Placed on {new Date(order.createdAt).toLocaleDateString()}
                             </p>
@@ -126,9 +130,15 @@ const UserOrdersTab = () => {
                         </div>
                         <div className="text-right">
                             <p className="text-sm text-gray-600">Total Amount</p>
-                            <p className="text-2xl font-bold text-blue-600">
+                            <p className="text-2xl font-bold text-blue-600 mb-2">
                                 ${order.totalPrice.toFixed(2)}
                             </p>
+                            <Link
+                                to={`/orders/${order._id}`}
+                                className="inline-block bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-lg text-sm font-bold transition"
+                            >
+                                View Details
+                            </Link>
                         </div>
                     </div>
 
@@ -147,10 +157,10 @@ const UserOrdersTab = () => {
                 <Pagination
                     currentPage={pagination.page}
                     totalPages={pagination.totalPages}
-                    onPageChange={setPage}
                 />
             )}
         </div>
+
     );
 };
 
